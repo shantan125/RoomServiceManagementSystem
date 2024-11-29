@@ -1,7 +1,7 @@
 package com.user.exception;
 
-public class RecordNotFoundException extends Exception {
-public RecordNotFoundException(String message) {
-	super(message);
-}
+public class RecordNotFoundException extends RuntimeException {
+    public RecordNotFoundException(String message) {
+        super(message);
+    }
 }
