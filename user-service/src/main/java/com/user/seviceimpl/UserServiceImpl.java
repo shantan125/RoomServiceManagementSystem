@@ -19,25 +19,29 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
-    
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
+//    @Autowired
+//    private PasswordEncoder passwordEncoder; // Inject PasswordEncoder to hash passwords
+
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
     public UserBean save(UserBean userBean) {
         logger.info("Saving user with details: {}", userBean);
 
-        User user = new User(userBean.getId(), userBean.getName(), userBean.getPassword(), 
-                             userBean.getEmail(), userBean.getMobileNo(), userBean.getAddress());
+        // Hash the password before saving
+        String hashedPassword = userBean.getPassword();
+
+        User user = new User(userBean.getId(), userBean.getName(), hashedPassword, 
+                             userBean.getEmail(), userBean.getMobileNo(), userBean.getAddress(), userBean.getRole());
+
         user = userRepository.save(user);
 
         logger.info("User saved successfully with ID: {}", user.getId());
-        
 
         return new UserBean(user.getId(), user.getName(), user.getPassword(), 
-                            user.getEmail(), user.getMobileNo(), user.getAddress());
+                            user.getEmail(), user.getMobileNo(), user.getAddress(), user.getRole());
     }
-
 
     @Override
     public UserBean update(UserBean userBean) throws RecordNotFoundException {
@@ -51,7 +55,12 @@ public class UserServiceImpl implements UserService {
 
         logger.info("User found with ID: {}. Updating details.", userBean.getId());
         user.setName(userBean.getName());
-        user.setPassword(userBean.getPassword());
+
+        // Hash the password if it's updated
+        if (!userBean.getPassword().equals(user.getPassword())) {
+            user.setPassword(userBean.getPassword());
+        }
+        
         user.setEmail(userBean.getEmail());
         user.setMobileNo(userBean.getMobileNo());
         user.setAddress(userBean.getAddress());
@@ -60,9 +69,8 @@ public class UserServiceImpl implements UserService {
         logger.info("User updated successfully with ID: {}", user.getId());
 
         return new UserBean(user.getId(), user.getName(), user.getPassword(),
-                            user.getEmail(), user.getMobileNo(), user.getAddress());
+                            user.getEmail(), user.getMobileNo(), user.getAddress(), userBean.getRole());
     }
-
 
     @Override
     public void delete(int id) throws RecordNotFoundException {
@@ -78,7 +86,6 @@ public class UserServiceImpl implements UserService {
         logger.info("User successfully deleted with ID: {}", id);
     }
 
-
     @Override
     public UserBean getById(int id) {
         logger.info("Fetching user with ID: {}", id);
@@ -90,9 +97,8 @@ public class UserServiceImpl implements UserService {
                                   });
 
         logger.info("User successfully fetched with ID: {}", id);
-        return new UserBean(user.getId(), user.getName(), user.getPassword(), user.getEmail(), user.getMobileNo(), user.getAddress());
+        return new UserBean(user.getId(), user.getName(), user.getPassword(), user.getEmail(), user.getMobileNo(), user.getAddress(), user.getRole());
     }
-
 
     @Override
     public List<UserBean> getAll() {
@@ -107,8 +113,9 @@ public class UserServiceImpl implements UserService {
         }
 
         return users.stream()
-                    .map(user -> new UserBean(user.getId(), user.getName(), user.getPassword(), user.getEmail(), user.getMobileNo(), user.getAddress()))
+                    .map(user -> new UserBean(user.getId(), user.getName(), user.getPassword(), user.getEmail(), user.getMobileNo(), user.getAddress(), user.getRole()))
                     .collect(Collectors.toList());
     }
-
 }
+
+
