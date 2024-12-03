@@ -16,4 +16,6 @@ public class UserBean {
     private String email;
     private String mobileNo;
     private String address;
+    private String role;
+
 }
